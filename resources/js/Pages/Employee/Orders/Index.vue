@@ -1,13 +1,11 @@
 <script setup>
+import { ref } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import Pagination from "@/Components/Pagination.vue";
 
 const props = defineProps({
     orders: {
-        type: Array,
-        required: true,
-    },
-    stats: {
         type: Object,
         required: true,
     },
@@ -32,59 +30,27 @@ const getStatusLabel = (status) => {
 </script>
 
 <template>
-    <Head title="客戶儀表板" />
+    <Head title="訂單管理" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                歡迎回來
-            </h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    訂單管理
+                </h2>
+                <Link
+                    :href="route('employee.orders.create')"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                    新增訂單
+                </Link>
+            </div>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <!-- 統計卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div
-                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
-                    >
-                        <div class="text-sm text-gray-600">總訂單數</div>
-                        <div class="text-2xl font-semibold">
-                            {{ stats.total_orders }}
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
-                    >
-                        <div class="text-sm text-gray-600">待處理</div>
-                        <div class="text-2xl font-semibold text-yellow-600">
-                            {{ stats.pending_orders }}
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
-                    >
-                        <div class="text-sm text-gray-600">處理中</div>
-                        <div class="text-2xl font-semibold text-blue-600">
-                            {{ stats.processing_orders }}
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
-                    >
-                        <div class="text-sm text-gray-600">已完成</div>
-                        <div class="text-2xl font-semibold text-green-600">
-                            {{ stats.completed_orders }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 最近訂單 -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">
-                            最近訂單
-                        </h3>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -93,6 +59,11 @@ const getStatusLabel = (status) => {
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                                         >
                                             訂單編號
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            客戶
                                         </th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -114,24 +85,25 @@ const getStatusLabel = (status) => {
                                         >
                                             建立時間
                                         </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            操作
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody
                                     class="bg-white divide-y divide-gray-200"
                                 >
-                                    <tr v-for="order in orders" :key="order.id">
+                                    <tr
+                                        v-for="order in orders.data"
+                                        :key="order.id"
+                                    >
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <Link
-                                                :href="
-                                                    route(
-                                                        'customer.orders.show',
-                                                        order.id
-                                                    )
-                                                "
-                                                class="text-blue-600 hover:text-blue-900"
-                                            >
-                                                #{{ order.id }}
-                                            </Link>
+                                            #{{ order.id }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {{ order.user.name }}
                                         </td>
                                         <td class="px-6 py-4">
                                             <div
@@ -161,9 +133,26 @@ const getStatusLabel = (status) => {
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{ order.created_at }}
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <Link
+                                                :href="
+                                                    route(
+                                                        'employee.orders.show',
+                                                        order.id
+                                                    )
+                                                "
+                                                class="text-blue-600 hover:text-blue-900 mr-4"
+                                            >
+                                                查看
+                                            </Link>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-6">
+                            <Pagination :links="orders.links" />
                         </div>
                     </div>
                 </div>

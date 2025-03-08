@@ -1,99 +1,152 @@
 <template>
+    <Head title="新增訂單" />
+
     <AuthenticatedLayout>
-      <template #header>
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">客戶儀表板</h2>
-      </template>
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                新增訂單
+            </h2>
+        </template>
 
-      <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 text-gray-900">
-              <h3 class="text-lg font-medium mb-4">歡迎回來，{{ $page.props.auth.user.name }}!</h3>
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <form @submit.prevent="submit">
+                            <div class="space-y-4">
+                                <div
+                                    v-for="(item, index) in selectedItems"
+                                    :key="index"
+                                    class="flex items-center space-x-4"
+                                >
+                                    <div class="flex-1">
+                                        <select
+                                            v-model="item.laundry_type_id"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                            <option value="">
+                                                選擇洗衣類型
+                                            </option>
+                                            <option
+                                                v-for="type in laundryTypes"
+                                                :key="type.id"
+                                                :value="type.id"
+                                            >
+                                                {{ type.name }} - ${{
+                                                    type.price
+                                                }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="w-32">
+                                        <input
+                                            type="number"
+                                            v-model="item.quantity"
+                                            min="1"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        @click="removeItem(index)"
+                                        class="text-red-600 hover:text-red-900"
+                                    >
+                                        移除
+                                    </button>
+                                </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <div class="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt class="text-sm font-medium text-gray-500 truncate">我的訂單</dt>
-                          <dd class="flex items-baseline">
-                            <div class="text-2xl font-semibold text-gray-900">查看所有訂單</div>
-                          </dd>
-                        </dl>
-                      </div>
+                                <button
+                                    type="button"
+                                    @click="addItem"
+                                    class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                                >
+                                    新增項目
+                                </button>
+
+                                <div class="mt-4">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700"
+                                        >備註</label
+                                    >
+                                    <textarea
+                                        v-model="form.notes"
+                                        rows="3"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    ></textarea>
+                                </div>
+
+                                <div
+                                    class="mt-4 flex justify-between items-center"
+                                >
+                                    <div class="text-xl font-bold">
+                                        總計: ${{ totalPrice }}
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                        :disabled="
+                                            form.processing ||
+                                            selectedItems.length === 0
+                                        "
+                                    >
+                                        提交訂單
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div class="mt-5">
-                      <Link :href="route('customer.my-orders')" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                        查看訂單
-                      </Link>
-                    </div>
-                  </div>
                 </div>
-
-                <div class="bg-green-50 overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <div class="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt class="text-sm font-medium text-gray-500 truncate">新訂單</dt>
-                          <dd class="flex items-baseline">
-                            <div class="text-2xl font-semibold text-gray-900">創建新訂單</div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                    <div class="mt-5">
-                      <Link :href="route('customer.new-order')" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
-                        創建訂單
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-purple-50 overflow-hidden shadow rounded-lg">
-                  <div class="px-4 py-5 sm:p-6">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div class="ml-5 w-0 flex-1">
-                        <dl>
-                          <dt class="text-sm font-medium text-gray-500 truncate">我的資料</dt>
-                          <dd class="flex items-baseline">
-                            <div class="text-2xl font-semibold text-gray-900">個人資料管理</div>
-                          </dd>
-                        </dl>
-                      </div>
-                    </div>
-                    <div class="mt-5">
-                      <Link :href="route('profile.edit')" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700">
-                        編輯資料
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </AuthenticatedLayout>
-  </template>
+</template>
 
-  <script setup>
-  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-  import { Link } from '@inertiajs/vue3';
-  </script>
+<script setup>
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Head, useForm } from "@inertiajs/vue3";
+import { ref, computed } from "vue";
+
+const props = defineProps({
+    laundryTypes: {
+        type: Array,
+        default: () => [],
+    },
+});
+
+const form = useForm({
+    items: [],
+    notes: "",
+});
+
+const selectedItems = ref([]);
+
+const addItem = () => {
+    selectedItems.value.push({
+        laundry_type_id: "",
+        quantity: 1,
+    });
+};
+
+const removeItem = (index) => {
+    selectedItems.value.splice(index, 1);
+};
+
+const totalPrice = computed(() => {
+    return selectedItems.value.reduce((total, item) => {
+        const laundryType = props.laundryTypes.find(
+            (type) => type.id === item.laundry_type_id
+        );
+        return total + (laundryType ? laundryType.price * item.quantity : 0);
+    }, 0);
+});
+
+const submit = () => {
+    form.items = selectedItems.value;
+    form.post(route("customer.orders.store"), {
+        onSuccess: () => {
+            selectedItems.value = [];
+            form.reset();
+        },
+    });
+};
+</script>

@@ -4,13 +4,20 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, $role)
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!$request->user() || !$request->user()->hasRole($role)) {
-            return response()->json(['message' => '您沒有權限訪問此資源'], 403);
+        if (!$request->user() || $request->user()->role_id != $role) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => '未授權的訪問'], 403);
+            }
+            return redirect()->route('dashboard')->with('error', '未授權的訪問');
         }
 
         return $next($request);

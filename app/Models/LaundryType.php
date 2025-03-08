@@ -9,7 +9,11 @@ class LaundryType extends Model
 {
     /** @use HasFactory<\Database\Factories\LaundryTypeFactory> */
     use HasFactory;
-    protected $fillable = ['name', 'description', 'price'];
+    protected $fillable = [
+        'name',
+        'price',
+        'description'
+    ];
 
     public function orderItems()
     {
