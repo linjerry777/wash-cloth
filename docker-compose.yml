@@ -1,94 +1,110 @@
 version: "3.8"
 
 services:
-  # PHP服务
-  app:
-    build:
-      context: ./docker/php
-      dockerfile: Dockerfile
-    container_name: wash-cloth-app
-    restart: unless-stopped
-    working_dir: /var/www/
-    volumes:
-      - ./:/var/www
-    networks:
-      - wash-cloth
+    # PHP服务
+    app:
+        build:
+            context: ./docker/php
+            dockerfile: Dockerfile
+        container_name: wash-cloth-app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - wash-cloth
 
-  # Nginx服务
-  nginx:
-    image: nginx:alpine
-    container_name: wash-cloth-nginx
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx:/etc/nginx/conf.d/
-    networks:
-      - wash-cloth
+    # Nginx服务
+    nginx:
+        image: nginx:alpine
+        container_name: wash-cloth-nginx
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx:/etc/nginx/conf.d/
+        networks:
+            - wash-cloth
 
-  # MySQL服务
-  db:
-    image: mysql:8.0
-    container_name: wash-cloth-db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: wash_cloth
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_PASSWORD: 123456
-      MYSQL_USER: wash_cloth_user
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
-    volumes:
-      - ./docker/mysql:/docker-entrypoint-initdb.d
-      - mysql-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    networks:
-      - wash-cloth
+    # MySQL服务
+    db:
+        image: mysql:8.0
+        container_name: wash-cloth-db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: wash_cloth
+            MYSQL_ROOT_PASSWORD: 123456
+            MYSQL_PASSWORD: 123456
+            MYSQL_USER: wash_cloth_user
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - ./docker/mysql:/docker-entrypoint-initdb.d
+            - mysql-data:/var/lib/mysql
+        ports:
+            - "3306:3306"
+        networks:
+            - wash-cloth
 
-  # Redis服务
-  redis:
-    image: redis:alpine
-    container_name: wash-cloth-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - wash-cloth
+    # phpMyAdmin服务
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: wash-cloth-phpmyadmin
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+            PMA_USER: wash_cloth_user
+            PMA_PASSWORD: 123456
+        ports:
+            - "8888:80"
+        networks:
+            - wash-cloth
+        depends_on:
+            - db
 
-  # Node服务（用于Vue3开发）
-  node:
-    image: node:18-alpine
-    container_name: wash-cloth-node
-    volumes:
-      - ./:/var/www
-    working_dir: /var/www
-    networks:
-      - wash-cloth
+    # Redis服务
+    redis:
+        image: redis:alpine
+        container_name: wash-cloth-redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        networks:
+            - wash-cloth
 
-  # Jenkins服务
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: wash-cloth-jenkins
-    restart: unless-stopped
-    privileged: true
-    user: root
-    ports:
-      - "8081:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins-data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - wash-cloth
+    # Node服务（用于Vue3开发）
+    node:
+        image: node:18-alpine
+        container_name: wash-cloth-node
+        volumes:
+            - ./:/var/www
+        working_dir: /var/www
+        networks:
+            - wash-cloth
+
+    # Jenkins服务
+    jenkins:
+        image: jenkins/jenkins:lts
+        container_name: wash-cloth-jenkins
+        restart: unless-stopped
+        privileged: true
+        user: root
+        ports:
+            - "8081:8080"
+            - "50000:50000"
+        volumes:
+            - jenkins-data:/var/jenkins_home
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - wash-cloth
 
 networks:
-  wash-cloth:
-    driver: bridge
+    wash-cloth:
+        driver: bridge
 
 volumes:
-  mysql-data:
-    driver: local
-  jenkins-data:
-    driver: local
+    mysql-data:
+        driver: local
+    jenkins-data:
+        driver: local
